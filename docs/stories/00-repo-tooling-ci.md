@@ -40,4 +40,6 @@ trust a security tool that holds itself to its own standard.
 
 - [x] Vitest: the suite version is read from package.json and refused
       when it is missing or malformed.
-- [ ] The first CI run on GitHub is green.
+- [x] CI on GitHub is green. (The very first run failed: the gitleaks
+      action cannot scan a repo's first push. CI now runs gitleaks
+      itself over the whole history.)
