@@ -1,0 +1,22 @@
+{
+    "$schema": "https://www.schemastore.org/package.json",
+    "name": "containment-breach",
+    "version": "0.0.0",
+    "private": true,
+    "description": "Crash tests for AI apps.",
+    "type": "module",
+    "scripts": {
+        "check": "vp check",
+        "check:fix": "vp check --fix",
+        "types:check": "tsc --noEmit",
+        "test": "vp test run"
+    },
+    "devDependencies": {
+        "@types/node": "^24.0.0",
+        "typescript": "^5.7.2",
+        "vite-plus": "1.8.0"
+    },
+    "engines": {
+        "node": ">=24"
+    }
+}

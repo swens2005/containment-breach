@@ -1,0 +1,12 @@
+/node_modules
+/dist
+.DS_Store
+npm-debug.log
+# Every env file is secret
+.env
+.env.*
+!.env.example
+/.claude/settings.local.json
+/.claude/worktrees
+/.idea
+/.vscode
