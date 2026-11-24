@@ -1,6 +1,6 @@
 # Containment Breach
 
-Crash tests for AI apps. An open-source TypeScript suite that attacks
+Crash tests for AI apps. A public TypeScript suite that attacks
 small sample AI apps the way an attacker would, and a static dashboard
 that shows how often each attack gets through, for each model and each
 defense, over time.
@@ -12,7 +12,9 @@ The dashboard's art is in `../studio-redesign/art/final/cb/` until the
 dashboard's first story brings it in.
 
 **This repo is public.** Everything committed here can be read by
-anyone: code, docs, commit messages, run files.
+anyone: code, docs, commit messages, run files. It has no license on
+purpose (all rights reserved): never call it open source, and don't
+add a license without asking.
 
 ## Stack
 

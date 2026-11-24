@@ -29,7 +29,8 @@ trust a security tool that holds itself to its own standard.
 - [x] `SECURITY.md` says how to report a problem, through GitHub's
       private vulnerability reporting (switched on in the repo's
       settings).
-- [ ] A license. (Waits for a choice; MIT is proposed.)
+- [x] The rights are stated: public to read, no license, all rights
+      reserved (decided 24 November 2026; MIT was considered).
 
 ## Not in this story
 

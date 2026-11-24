@@ -4,6 +4,7 @@
     "version": "0.0.0",
     "private": true,
     "description": "Crash tests for AI apps.",
+    "license": "UNLICENSED",
     "type": "module",
     "scripts": {
         "check": "vp check",
