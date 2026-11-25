@@ -91,6 +91,15 @@ needs them.
   motion. Status is always written out, never shown by color alone.
 - Write American English everywhere.
 
+## Patterns to reuse
+
+- **Formats (ADR 0002):** the zod schemas in
+  `packages/core/src/formats/` are the formats; types are inferred
+  from them. Parse untrusted input with `parseAttack`, `parseTarget`
+  or `parseRunFile` (they throw a `FormatError` that names each
+  field). New objects use `z.strictObject`; ids use `idSchema`;
+  money is a whole number (`costMicroUsd`).
+
 ## Gotchas (learned in Mission Control)
 
 - **Pinned actions:** CI pins every GitHub Action to a commit. Look the
