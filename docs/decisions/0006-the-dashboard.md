@@ -32,7 +32,8 @@ for the dashboard.
 - **Sample data is for local work only.** `npm run dashboard:sample`
   makes it with a stand-in, not a model; every page then carries a
   "Sample data" strip, and the model names are `sample-model-1` and
-  `-2`. The normal build never uses it.
+  `-2`. The normal build never uses it. (ADR 0007 adds one use: a
+  labeled demo on the published site until the first live run.)
 - **A strict CSP in a `<meta>` tag:** `default-src 'none'`, then the
   page's own scripts, styles, images, fonts and its data file. No
   inline style or script, no data: URIs, no third party. Fonts

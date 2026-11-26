@@ -42,7 +42,8 @@ function DemoStrip({ data }: { data: DashboardData }) {
             <div className="demo-strip" role="note">
                 <span>
                     <b>Sample data.</b> Made-up replies from a stand-in, not
-                    from any model. For working on this page only.
+                    from any model. They show how the page works until the first
+                    recorded run.
                 </span>
             </div>
         );

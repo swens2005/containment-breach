@@ -31,6 +31,7 @@ npm run cb -- run      # the suite; demo mode unless CB_MODE=live and a key
 npm run cb -- plan     # calls and highest cost of a live run; calls nothing
 npm run dashboard:build   # the static site, from the latest recorded run
 npm run dashboard:sample  # the same with made-up sample data, for local work
+npm run dashboard:publish # what the deploy builds: real data, or the labeled demo
 ```
 
 All of these must pass before committing. CI runs the same set, plus a

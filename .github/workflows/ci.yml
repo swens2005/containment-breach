@@ -121,9 +121,11 @@ jobs:
         if: steps.secrets.outputs.ready == 'true'
         run: npm ci
 
+      # Real data when a finished live run is committed; until then a
+      # demo with sample data, labeled on every page (ADR 0007).
       - name: Build the dashboard
         if: steps.secrets.outputs.ready == 'true'
-        run: npm run dashboard:build
+        run: npm run dashboard:publish
 
       # Uploads only the built site, and only files that changed since
       # the last upload (tracked in a state file inside SITE_DIR).

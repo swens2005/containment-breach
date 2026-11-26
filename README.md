@@ -9,9 +9,10 @@ through, for each model and each defense.
 ## Status
 
 The suite and the dashboard are built. **No results are published
-yet:** the suite has not been run against a real model, and the
-dashboard only shows numbers that a recorded run backs. Until there is
-one, it says "No recorded run yet".
+yet:** the suite has not been run against a real model. Until it has,
+the published dashboard is a demo. Its numbers are sample data from a
+stand-in made of plain code, and every page says so. They say nothing
+about any model.
 
 ## What is in it
 

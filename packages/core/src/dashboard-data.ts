@@ -55,6 +55,19 @@ export function latestFinishedRun(runs: readonly RunFile[]): RunFile | null {
 }
 
 /**
+ * Whether the site is built with sample data: when asked for outright
+ * (local work), or when a demo is allowed and there is no finished
+ * live run to show. A real run always wins over the demo.
+ */
+export function wantsSample(input: {
+    asked: boolean;
+    demoAllowed: boolean;
+    finishedRun: RunFile | null;
+}): boolean {
+    return input.asked || (input.demoAllowed && input.finishedRun === null);
+}
+
+/**
  * Build the dashboard's data by replaying a run from its recordings.
  * The replay must give exactly the run file that was written by the
  * live run: the page can then never show a number, or a reply, that

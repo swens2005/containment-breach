@@ -14,6 +14,7 @@
         "cb": "node packages/cli/bin.ts",
         "dashboard:data": "node apps/dashboard/scripts/build-data.ts",
         "dashboard:build": "npm run dashboard:data && vp build apps/dashboard",
+        "dashboard:publish": "node apps/dashboard/scripts/build-data.ts --demo && vp build apps/dashboard",
         "dashboard:sample": "node apps/dashboard/scripts/build-data.ts --sample && vp build apps/dashboard"
     },
     "dependencies": {

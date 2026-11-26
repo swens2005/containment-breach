@@ -1,6 +1,10 @@
 import { describe, expect, it } from 'vite-plus/test';
 import { targets } from '../../targets/index.ts';
-import { buildDashboardData, latestFinishedRun } from './dashboard-data.ts';
+import {
+    buildDashboardData,
+    latestFinishedRun,
+    wantsSample,
+} from './dashboard-data.ts';
 import { defenses } from './defenses.ts';
 import { parseAttack } from './formats/attack.ts';
 import type { RunFile } from './formats/run-file.ts';
@@ -197,5 +201,18 @@ describe('the dashboard data', () => {
             ])?.date,
         ).toBe('2026-11-20T00:00:00Z');
         expect(latestFinishedRun([])).toBeNull();
+
+        // Sample data: when asked for, or as a demo while no run exists.
+        const finishedRun = latestFinishedRun([]);
+
+        expect(
+            wantsSample({ asked: false, demoAllowed: false, finishedRun }),
+        ).toBe(false);
+        expect(
+            wantsSample({ asked: false, demoAllowed: true, finishedRun }),
+        ).toBe(true);
+        expect(
+            wantsSample({ asked: true, demoAllowed: false, finishedRun }),
+        ).toBe(true);
     });
 });

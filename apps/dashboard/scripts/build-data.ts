@@ -11,6 +11,7 @@ import { loadAttacks } from '../../../packages/core/src/attacks.ts';
 import {
     buildDashboardData,
     latestFinishedRun,
+    wantsSample,
 } from '../../../packages/core/src/dashboard-data.ts';
 import { defenses } from '../../../packages/core/src/defenses.ts';
 import {
@@ -33,10 +34,13 @@ import { targets } from '../../../packages/targets/index.ts';
 //
 //   node apps/dashboard/scripts/build-data.ts            real data
 //   node apps/dashboard/scripts/build-data.ts --sample   made-up data
+//   node apps/dashboard/scripts/build-data.ts --demo     made-up data,
+//                                  but only while there is no real run
 //
 // Real data comes from the latest finished live run in runs/, replayed
-// from recordings/. Sample data is for working on the site locally: it
-// is made by a stand-in, not a model, and is labeled on every page.
+// from recordings/. Sample data is made by a stand-in, not a model, and
+// is labeled on every page. It is for working on the site locally, and
+// for the published demo until the first live run (ADR 0007).
 
 const root = fileURLToPath(new URL('../../../', import.meta.url));
 const out = fileURLToPath(new URL('../public/data.json', import.meta.url));
@@ -122,7 +126,12 @@ function standIn(): ModelClient {
 
 let run: RunFile | null;
 let client: ModelClient;
-const sample = process.argv.includes('--sample');
+const finishedRun = latestFinishedRun(liveRuns());
+const sample = wantsSample({
+    asked: process.argv.includes('--sample'),
+    demoAllowed: process.argv.includes('--demo'),
+    finishedRun,
+});
 
 if (sample) {
     const store = memoryStore();
@@ -141,7 +150,7 @@ if (sample) {
     });
     client = recordedClient(store);
 } else {
-    run = latestFinishedRun(liveRuns());
+    run = finishedRun;
     client = recordedClient(fileStore(join(root, 'recordings')));
 }
 
