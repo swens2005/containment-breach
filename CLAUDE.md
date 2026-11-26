@@ -29,6 +29,7 @@ npm run check          # lint + format check (npm run check:fix to fix)
 npm run types:check    # tsc
 npm test               # Vitest (vp test), *.test.ts next to the code
 npm run cb -- run      # the suite; demo mode unless CB_MODE=live and a key
+npm run cb -- plan     # calls and highest cost of a live run; calls nothing
 ```
 
 All of these must pass before committing. CI runs the same set, plus a
@@ -110,7 +111,11 @@ needs them.
 - **Sample apps** implement `TargetApp` and only build a request;
   add new ones to `packages/targets/index.ts`.
 - **Defenses** implement `Defense`: a `ModelClient` wrapped around
-  another one.
+  another one. The five setups and their order are in
+  `defenses.ts` (ADR 0005). Tools are never run: the suite only
+  looks at whether the model asked for one.
+- **Attacks by email** use the forbidden-tool judge, not the canary
+  judge (ADR 0005 says why).
 - **Limits (ADR 0004):** every call passes the meter in
   `meter.ts`. A new model needs a price in `pricing.ts` first.
 - **Writing files:** scrub with `scrubText` / `scrubDeep` before

@@ -7,10 +7,10 @@ import {
 } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
 import { loadAttacks } from '../core/src/attacks.ts';
-import { noDefense } from '../core/src/defense.ts';
+import { defenses } from '../core/src/defenses.ts';
 import { parseRunFile, type RunFile } from '../core/src/formats/run-file.ts';
 import { FormatError, modelIdSchema } from '../core/src/formats/shared.ts';
-import type { Limits } from '../core/src/meter.ts';
+import { estimateTokens, type Limits } from '../core/src/meter.ts';
 import type { ModelClient } from '../core/src/model/client.ts';
 import {
     fileStore,
@@ -39,8 +39,11 @@ export interface Io {
 export const EXIT = { done: 0, error: 1, usage: 2, stoppedAtCap: 3 } as const;
 
 const USAGE = `Usage: cb run [--out <folder>]
+       cb plan
 
-Runs the suite against the sample apps and writes a run file.
+run   Runs the suite against the sample apps and writes a run file.
+plan  Shows how many calls a live run would make and the most it could
+      cost. Calls no model and writes nothing.
 
 Settings (environment variables):
   CB_MODE           demo (default) or live. Without ANTHROPIC_API_KEY
@@ -174,12 +177,100 @@ function summary(run: RunFile): string[] {
     return lines.length > 0 ? lines : ['  No attempts were made.'];
 }
 
+function limitsFrom(io: Io, now: Date): Limits {
+    return {
+        tokenLimit: wholeNumber(
+            io.env,
+            'CB_TOKEN_LIMIT',
+            200_000,
+            1,
+            100_000_000,
+        ),
+        runCapMicroUsd: dollars(io.env, 'CB_RUN_CAP_USD', '1.00'),
+        monthCapMicroUsd: dollars(io.env, 'CB_MONTH_CAP_USD', '10.00'),
+        monthSpentMicroUsd: monthSpent(join(io.root, 'runs'), now),
+    };
+}
+
+/** An amount for a setting, rounded up to whole cents: 1234567 -> "1.24". */
+function capFor(microUsd: number): string {
+    const cents = Math.ceil(microUsd / 10_000);
+
+    return `${Math.floor(cents / 100)}.${String(cents % 100).padStart(2, '0')}`;
+}
+
+/**
+ * `cb plan`: go through the whole run with a stand-in that calls
+ * nothing and answers with the most a real call could use.
+ */
+async function plan(io: Io): Promise<number> {
+    const models = modelsFrom(io.env);
+    const now = io.now();
+    const limits = limitsFrom(io, now);
+    let calls = 0;
+    const dry: ModelClient = {
+        complete(request) {
+            calls += 1;
+
+            return Promise.resolve({
+                model: request.model,
+                // As long as a real reply could be, so a check of the
+                // reply by another call is counted at full size.
+                text: 'x'.repeat(request.maxTokens * 2),
+                toolCalls: [],
+                tokens: estimateTokens(request),
+                stop: 'end',
+            });
+        },
+    };
+    const run = await runSuite({
+        attacks: loadAttacks(join(io.root, 'attacks')),
+        targets,
+        defenses,
+        models,
+        attempts: wholeNumber(io.env, 'CB_ATTEMPTS', 3, 1, 10),
+        mode: 'demo',
+        client: dry,
+        now,
+        suiteVersion: suiteVersion(),
+        price: costMicroUsd,
+    });
+    const tokens = run.tokens.input + run.tokens.output;
+    const cost = run.costMicroUsd;
+    const enough =
+        tokens <= limits.tokenLimit &&
+        cost <= limits.runCapMicroUsd &&
+        limits.monthSpentMicroUsd + cost <= limits.monthCapMicroUsd;
+
+    io.print(
+        `Plan for ${models.join(', ')}: ${run.results.length} attempts, at most ${calls} model calls.`,
+    );
+    io.print(
+        `At most ${tokens} tokens and ${formatUsd(cost)}. This is a high estimate: a real run costs less.`,
+    );
+    io.print(
+        `Caps now: ${limits.tokenLimit} tokens and ${formatUsd(limits.runCapMicroUsd)} for one run, ` +
+            `${formatUsd(limits.monthCapMicroUsd)} for the month (${formatUsd(limits.monthSpentMicroUsd)} spent so far).`,
+    );
+    io.print(
+        enough
+            ? 'These caps leave room for the whole run.'
+            : `These caps could stop the run early. To be sure it finishes: CB_TOKEN_LIMIT=${tokens} CB_RUN_CAP_USD=${capFor(cost)}` +
+                  (limits.monthSpentMicroUsd + cost > limits.monthCapMicroUsd
+                      ? ` CB_MONTH_CAP_USD=${capFor(limits.monthSpentMicroUsd + cost)}`
+                      : ''),
+    );
+    io.print('Nothing was called and nothing was written.');
+
+    return EXIT.done;
+}
+
 /** The `cb` command. Returns the exit code. */
 export async function main(argv: readonly string[], io: Io): Promise<number> {
     const [command, ...rest] = argv;
     let out: string | undefined;
 
-    if (command !== 'run') {
+    if (command !== 'run' && command !== 'plan') {
         io.print(USAGE);
 
         return command === '--help' || command === 'help'
@@ -187,7 +278,12 @@ export async function main(argv: readonly string[], io: Io): Promise<number> {
             : EXIT.usage;
     }
 
-    if (rest.length === 2 && rest[0] === '--out' && rest[1] !== undefined) {
+    if (
+        command === 'run' &&
+        rest.length === 2 &&
+        rest[0] === '--out' &&
+        rest[1] !== undefined
+    ) {
         out = resolve(rest[1]);
     } else if (rest.length > 0) {
         io.print(USAGE);
@@ -196,6 +292,10 @@ export async function main(argv: readonly string[], io: Io): Promise<number> {
     }
 
     try {
+        if (command === 'plan') {
+            return await plan(io);
+        }
+
         const asked = io.env['CB_MODE'] ?? 'demo';
 
         if (asked !== 'demo' && asked !== 'live') {
@@ -221,18 +321,7 @@ export async function main(argv: readonly string[], io: Io): Promise<number> {
         let limits: Limits | undefined;
 
         if (mode === 'live') {
-            limits = {
-                tokenLimit: wholeNumber(
-                    io.env,
-                    'CB_TOKEN_LIMIT',
-                    200_000,
-                    1,
-                    100_000_000,
-                ),
-                runCapMicroUsd: dollars(io.env, 'CB_RUN_CAP_USD', '1.00'),
-                monthCapMicroUsd: dollars(io.env, 'CB_MONTH_CAP_USD', '10.00'),
-                monthSpentMicroUsd: monthSpent(join(io.root, 'runs'), now),
-            };
+            limits = limitsFrom(io, now);
             client = recordingClient(io.liveClient(), recordings, secrets);
             io.print(
                 `Live run: real models are called. Caps: ${formatUsd(limits.runCapMicroUsd)} for this run, ` +
@@ -246,7 +335,7 @@ export async function main(argv: readonly string[], io: Io): Promise<number> {
         const run = await runSuite({
             attacks: loadAttacks(join(io.root, 'attacks')),
             targets,
-            defenses: [noDefense],
+            defenses,
             models,
             attempts,
             mode,

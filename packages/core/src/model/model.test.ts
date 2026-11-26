@@ -84,6 +84,30 @@ describe('recording and replay', () => {
         expect(store.size()).toBe(2);
     });
 
+    it('keeps identical requests within one run apart, in order', async () => {
+        const store = memoryStore();
+        const answers = [reply, { ...reply, text: 'Another answer.' }];
+        let call = 0;
+        const live: ModelClient = {
+            complete: () => Promise.resolve(answers[call++] ?? reply),
+        };
+        const recording = recordingClient(live, store);
+
+        await recording.complete(request, 1);
+        await recording.complete(request, 1);
+
+        const replay = recordedClient(store);
+
+        expect(store.size()).toBe(2);
+        expect((await replay.complete(request, 1)).text).toBe(reply.text);
+        expect((await replay.complete(request, 1)).text).toBe(
+            'Another answer.',
+        );
+        await expect(replay.complete(request, 1)).rejects.toThrow(
+            MissingRecordingError,
+        );
+    });
+
     it('fails loudly on a request it has no recording for', async () => {
         const store = memoryStore();
 
@@ -151,6 +175,7 @@ describe('recording and replay', () => {
         store.write('k', {
             request,
             sample: 1,
+            repeat: 1,
             reply: { ...reply, stop: 'bribed' } as unknown as ModelReply,
         });
 

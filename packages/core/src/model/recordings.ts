@@ -16,6 +16,8 @@ import {
 export const recordingSchema = z.strictObject({
     request: modelRequestSchema,
     sample: z.int().min(1).max(100),
+    /** Counts identical requests within one run, from 1. */
+    repeat: z.int().min(1).max(10_000),
     reply: modelReplySchema,
 });
 
@@ -47,10 +49,17 @@ function canonical(value: unknown): string {
     return JSON.stringify(value);
 }
 
-/** The name a recording is filed under: a hash of the request and the try. */
-export function recordingKey(request: ModelRequest, sample: number): string {
+/**
+ * The name a recording is filed under: a hash of the request, the try,
+ * and how often this exact request came by before in the same run.
+ */
+export function recordingKey(
+    request: ModelRequest,
+    sample: number,
+    repeat = 1,
+): string {
     return createHash('sha256')
-        .update(canonical({ request, sample }))
+        .update(canonical({ request, sample, repeat }))
         .digest('hex')
         .slice(0, 32);
 }
@@ -121,6 +130,25 @@ export function memoryStore(): RecordingStore & { size(): number } {
     };
 }
 
+/**
+ * Two different attacks can lead to the very same request (a checker
+ * reading two identical refusals). Each still gets its own recording:
+ * the client counts identical requests, and a run always makes its
+ * calls in the same order.
+ */
+function counter(): (request: ModelRequest, sample: number) => number {
+    const seen = new Map<string, number>();
+
+    return (request, sample) => {
+        const same = recordingKey(request, sample);
+        const repeat = (seen.get(same) ?? 0) + 1;
+
+        seen.set(same, repeat);
+
+        return repeat;
+    };
+}
+
 /** A request the recorded client has no saved reply for. */
 export class MissingRecordingError extends Error {
     override name = 'MissingRecordingError';
@@ -132,10 +160,14 @@ export class MissingRecordingError extends Error {
  * never cost anything.
  */
 export function recordedClient(store: RecordingStore): ModelClient {
+    const count = counter();
+
     return {
         complete(request, sample) {
             const asked = parseAs(modelRequestSchema, 'model request', request);
-            const recording = store.read(recordingKey(asked, sample));
+            const recording = store.read(
+                recordingKey(asked, sample, count(asked, sample)),
+            );
 
             if (recording === undefined) {
                 return Promise.reject(
@@ -162,9 +194,12 @@ export function recordingClient(
     store: RecordingStore,
     secrets: readonly string[] = [],
 ): ModelClient {
+    const count = counter();
+
     return {
         async complete(request, sample) {
             const asked = parseAs(modelRequestSchema, 'model request', request);
+            const repeat = count(asked, sample);
             const answered = await live.complete(asked, sample);
             const reply: ModelReply = parseAs(
                 modelReplySchema,
@@ -174,9 +209,10 @@ export function recordingClient(
 
             // The key comes from the request as sent, so a replay of the
             // same request finds it.
-            store.write(recordingKey(asked, sample), {
+            store.write(recordingKey(asked, sample, repeat), {
                 request: scrubDeep(asked, secrets),
                 sample,
+                repeat,
                 reply,
             });
 

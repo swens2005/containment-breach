@@ -175,19 +175,21 @@ describe('cb run', () => {
     it('runs live with a key, records, and then replays as a demo for free', async () => {
         expect(await main(['run'], io(liveEnv))).toBe(EXIT.done);
 
-        const calls = attackCount * 3;
+        // Every attack fits one sample app; five defenses, three tries.
+        const attempts = attackCount * 5 * 3;
+        const calls = liveCalls;
         const liveFile = join(root, 'runs', '2026-11-26T100000Z', 'run.json');
         const live = readRun(liveFile);
 
-        expect(liveCalls).toBe(calls);
+        expect(calls).toBeGreaterThan(attempts / 2);
         expect(live.mode).toBe('live');
-        expect(live.results).toHaveLength(calls);
+        expect(live.results).toHaveLength(attempts);
         expect(live.tokens).toEqual({ input: 300 * calls, output: 40 * calls });
         expect(live.costMicroUsd).toBe((300 * 4 + 40 * 20) * calls);
         expect(readdirSync(join(root, 'recordings'))).toHaveLength(calls);
         expect(printed.join('\n')).toContain('Mode: live.');
         expect(printed.join('\n')).toContain(
-            `0 of ${calls} attempts breached (0%)`,
+            'support-bot / none / claude-opus-5-5: 0 of 21 attempts breached (0%)',
         );
         expect(printed.at(-1)).toBe(`Run file: ${liveFile}`);
 
@@ -233,7 +235,7 @@ describe('cb run', () => {
         expect(code).toBe(EXIT.stoppedAtCap);
         expect(run.stopped?.reason).toBe('run-cap');
         expect(run.results.length).toBeGreaterThan(0);
-        expect(run.results.length).toBeLessThan(attackCount * 3);
+        expect(run.results.length).toBeLessThan(attackCount * 5 * 3);
         expect(liveCalls).toBe(run.results.length);
         expect(run.costMicroUsd).toBeLessThanOrEqual(50_000);
         expect(printed.join('\n')).toContain('Stopped early:');
@@ -298,5 +300,47 @@ describe('amounts', () => {
         for (const bad of ['', 'ten', '-1', '1.', '.5', '1.0000001', '1e3']) {
             expect(usdToMicro(bad)).toBeUndefined();
         }
+    });
+});
+
+describe('cb plan', () => {
+    it('counts the run without calling a model or writing a file', async () => {
+        expect(await main(['plan'], io(liveEnv))).toBe(EXIT.done);
+
+        const text = printed.join('\n');
+
+        // 14 attacks, each fitting one sample app; 5 defenses; 3 tries.
+        expect(attackCount).toBe(14);
+        expect(text).toContain(
+            'Plan for claude-opus-5-5: 210 attempts, at most ',
+        );
+        expect(text).toContain('This is a high estimate');
+        expect(text).toContain('These caps could stop the run early.');
+        expect(text).toMatch(/CB_TOKEN_LIMIT=\d+ CB_RUN_CAP_USD=\d+\.\d\d/);
+        expect(text).toContain('Nothing was called and nothing was written.');
+        expect(liveCalls).toBe(0);
+        expect(readdirSync(root)).toEqual(['attacks']);
+    });
+
+    it('says when the caps leave room, and counts fewer tries', async () => {
+        const code = await main(
+            ['plan'],
+            io({
+                CB_ATTEMPTS: '1',
+                CB_TOKEN_LIMIT: '5000000',
+                CB_RUN_CAP_USD: '50',
+                CB_MONTH_CAP_USD: '50',
+            }),
+        );
+
+        expect(code).toBe(EXIT.done);
+        expect(printed.join('\n')).toContain('70 attempts');
+        expect(printed.join('\n')).toContain(
+            'These caps leave room for the whole run.',
+        );
+    });
+
+    it('takes no extra words', async () => {
+        expect(await main(['plan', '--out', 'x'], io())).toBe(EXIT.usage);
     });
 });

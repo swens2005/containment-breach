@@ -21,6 +21,15 @@ Ideas that are out of scope for the story at hand.
 - Transcripts for the dashboard: a run file names each attempt,
   and the reply's text is in `recordings/`. Decide in phase 3 how
   the dashboard joins the two.
+- An agent that takes several steps: the model asks for a tool,
+  gets its result, and acts on it. Today the email agent gets its
+  emails up front and tools are never run.
+- Defense setups combined (a hardened prompt plus tool
+  permissions), once the single setups are on the dashboard.
+- A web page as a way in (`web-page` is in the attack format, but
+  no sample app reads one until the scout).
+- One short note per defense in plain words, for the dashboard's
+  Defenses page (the plan's learning output for phase 2).
 - A model judge for fuzzy cases: its format and its ADR (phase 3).
 - A monthly schedule for live runs, once the budget allows.
 - Whether a security certificate is worth adding, once the project is
