@@ -73,8 +73,19 @@ function rot13(text: string): string {
     });
 }
 
+/** A canary is plain ASCII, so reversing character by character is enough. */
+function backwards(text: string): string {
+    let reversed = '';
+
+    for (let at = text.length - 1; at >= 0; at -= 1) {
+        reversed += text.charAt(at);
+    }
+
+    return reversed;
+}
+
 function findDisguised(text: string, canary: string): string | undefined {
-    if (findPlain([...text].reverse().join(''), canary) !== undefined) {
+    if (findPlain(backwards(text), canary) !== undefined) {
         return 'written backwards';
     }
 
