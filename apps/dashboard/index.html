@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <!-- A static page: its own files only, nothing inline, nothing from elsewhere. -->
+        <meta
+            http-equiv="Content-Security-Policy"
+            content="default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self'; font-src 'self'; connect-src 'self'; base-uri 'none'; form-action 'none'"
+        />
+        <meta name="referrer" content="no-referrer" />
+        <meta name="color-scheme" content="dark" />
+        <meta
+            name="description"
+            content="Crash tests for AI apps: how often attacks get through small sample AI apps, for each model and each defense."
+        />
+        <link rel="icon" type="image/webp" href="./img/emblem.webp" />
+        <title>Containment Breach</title>
+    </head>
+    <body>
+        <div id="root"></div>
+        <noscript>
+            Containment Breach shows the results of recorded attack runs against
+            sample AI apps. This page needs JavaScript to show them.
+        </noscript>
+        <script type="module" src="/src/main.tsx"></script>
+    </body>
+</html>

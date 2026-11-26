@@ -13,6 +13,7 @@ export const HARDENING = `Security rules. These come before everything else:
 /** The app's prompt plus security rules. The defense everyone tries first. */
 export const hardenedPrompt: Defense = {
     id: 'hardened-prompt',
+    name: 'Hardened prompt',
     summary:
         'Security rules are added to the system prompt. The model is asked to behave.',
     wrap: (client) => ({
@@ -48,6 +49,7 @@ export function looksLikeInjection(text: string): boolean {
 /** Plain code that stops known injection phrases before the model sees them. */
 export const inputFilter: Defense = {
     id: 'input-filter',
+    name: 'Input filter',
     summary:
         'Plain code looks for known attack phrases and blocks the message before the model sees it.',
     wrap: (client) => ({
@@ -82,6 +84,7 @@ export const inputFilter: Defense = {
  */
 export const toolPermissions: Defense = {
     id: 'tool-permissions',
+    name: 'Tool permissions',
     summary:
         "A risky tool call is held for the user's approval and is not carried out on the model's word alone.",
     wrap: (client, target) => ({
@@ -157,6 +160,7 @@ Answer with one word: ALLOW or BLOCK.`,
 /** A second model call reads the reply and may block it. Fails closed. */
 export const checkerModel: Defense = {
     id: 'checker-model',
+    name: 'Checker model',
     summary:
         "A second model call reads the app's reply and blocks it when it gives out a secret or breaks a tool rule.",
     wrap: (client, target) => ({

@@ -1,0 +1,878 @@
+/* A containment facility in green code. A code-rain band at the top (a
+   canvas, never behind text), then solid black terminal panels. A breach
+   is magenta with a hazard stripe, never only another shade of green.
+   One dark look. Contrast ratios are on the panel color. */
+:root {
+    --void: #050a07; /* page */
+    --panel: #0b140f; /* terminal panels */
+    --well: #07100b; /* cells inside panels */
+    --frame: #1f3a28; /* thin frames */
+    --text: #d6f7df; /* 16.3:1 */
+    --soft: #8fbf9d; /* 9.0:1 */
+    --held: #39e66b; /* contained; 11.3:1 */
+    --leak: #ffb547; /* leaking; 10.7:1 */
+    --breach: #ff5fd2; /* breached; 7.0:1 */
+    --body: 'Figtree', system-ui, sans-serif;
+    --mono: 'JetBrains Mono', ui-monospace, Menlo, monospace;
+    color-scheme: dark;
+}
+
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    background: var(--void);
+    color: var(--text);
+    font: 16px/1.6 var(--body);
+}
+
+a {
+    color: var(--held);
+}
+
+:focus-visible {
+    outline: 3px solid var(--held);
+    outline-offset: 2px;
+}
+
+h1:focus,
+main:focus {
+    outline: none;
+}
+
+img {
+    max-width: 100%;
+    height: auto;
+}
+
+p {
+    margin: 0;
+}
+
+code,
+pre {
+    font-family: var(--mono);
+}
+
+pre {
+    margin: 0;
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+}
+
+.sr {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+}
+
+.skip {
+    position: absolute;
+    left: 8px;
+    top: -60px;
+    z-index: 5;
+    padding: 8px 12px;
+    background: var(--held);
+    color: var(--void);
+    font: 700 14px var(--mono);
+    border-radius: 8px;
+}
+
+.skip:focus {
+    top: 8px;
+}
+
+.label {
+    font: 500 12px/1.4 var(--mono);
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--soft);
+}
+
+.quiet {
+    color: var(--soft);
+}
+
+.wrap {
+    max-width: 1180px;
+    margin: -60px auto 0;
+    position: relative;
+    z-index: 1;
+    padding: 0 16px 64px;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 22px;
+}
+
+main {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 22px;
+}
+
+/* ---------- demo strip + code rain ---------- */
+.demo-strip {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 6px 16px;
+    padding: 9px 16px;
+    background: repeating-linear-gradient(
+        -45deg,
+        #1a1405 0 14px,
+        #120e04 14px 28px
+    );
+    border-bottom: 1px solid #3d2f0c;
+    font: 500 12.5px var(--mono);
+    color: var(--leak);
+}
+
+.demo-strip b {
+    color: #ffe0a8;
+    font-weight: 700;
+}
+
+.rain {
+    position: relative;
+    height: 170px;
+    overflow: hidden;
+    border-bottom: 1px solid var(--frame);
+    background: var(--void);
+}
+
+.rain canvas {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    display: block;
+}
+
+.rain::after {
+    content: '';
+    position: absolute;
+    inset: auto 0 0;
+    height: 70px;
+    background: linear-gradient(transparent, var(--void));
+}
+
+/* ---------- navigation ---------- */
+.nav {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px 18px;
+    background: var(--panel);
+    border: 1px solid var(--frame);
+    border-radius: 14px;
+    padding: 8px 14px;
+    font: 500 13px var(--mono);
+}
+
+.nav ul {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px 6px;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+.nav a {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 10px;
+    border-radius: 8px;
+    color: var(--text);
+    text-decoration: none;
+}
+
+.nav a:hover {
+    color: var(--held);
+}
+
+.nav a[aria-current='page'] {
+    color: var(--held);
+    box-shadow: inset 0 -2px 0 var(--held);
+}
+
+.nav-brand {
+    font-weight: 800;
+    color: #fff;
+}
+
+/* ---------- hero ---------- */
+.hero {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr);
+    gap: 26px;
+    align-items: center;
+}
+
+.hero-copy {
+    background: var(--panel);
+    border: 1px solid var(--frame);
+    border-radius: 18px;
+    padding: 22px 24px;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 10px;
+}
+
+.brand {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+h1 {
+    font: 800 clamp(1.5rem, 4.4vw, 2.6rem) / 1.05 var(--mono);
+    margin: 0;
+    letter-spacing: -0.02em;
+    color: #fff;
+    overflow-wrap: anywhere;
+}
+
+.tag {
+    font: 500 13px var(--mono);
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--held);
+}
+
+.hero figure {
+    margin: 0;
+    border-radius: 18px;
+    overflow: hidden;
+    border: 1px solid var(--frame);
+}
+
+.hero figure img {
+    display: block;
+    width: 100%;
+}
+
+/* ---------- panels ---------- */
+.panel {
+    background: var(--panel);
+    border: 1px solid var(--frame);
+    border-radius: 18px;
+    padding: 20px clamp(14px, 2.6vw, 26px);
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 12px;
+}
+
+.panel h1 {
+    font-size: clamp(1.25rem, 3vw, 1.8rem);
+    line-height: 1.2;
+}
+
+.hero .panel h1,
+.hero h1 {
+    font-size: clamp(1.5rem, 4.4vw, 2.6rem);
+    line-height: 1.05;
+}
+
+.panel h2 {
+    font: 800 1.25rem/1.2 var(--mono);
+    margin: 0;
+    letter-spacing: -0.01em;
+    color: #fff;
+}
+
+.panel-head {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 6px 16px;
+}
+
+.headline {
+    font: 500 clamp(1.02rem, 2.2vw, 1.3rem) / 1.5 var(--mono);
+}
+
+.headline em {
+    font-style: normal;
+    color: var(--breach);
+}
+
+.headline strong {
+    color: var(--held);
+    font-weight: 700;
+}
+
+.back {
+    font: 500 13px var(--mono);
+}
+
+/* Links that stand alone get a target at least 24px tall. */
+.back a,
+.foot a {
+    display: inline-block;
+    padding-block: 4px;
+}
+
+/* ---------- the grid ---------- */
+/* Positioned, so the hidden labels inside a wide table scroll with it
+   and cannot widen the page. */
+.grid-wrap {
+    overflow-x: auto;
+    position: relative;
+}
+
+table {
+    border-collapse: separate;
+    font-family: var(--mono);
+}
+
+table.grid {
+    width: 100%;
+    min-width: 720px;
+    border-spacing: 6px;
+}
+
+.grid caption {
+    text-align: left;
+    color: var(--soft);
+    font-size: 12.5px;
+    padding: 6px 6px 0;
+    caption-side: bottom;
+}
+
+th {
+    font: 500 11.5px/1.3 var(--mono);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--soft);
+    text-align: left;
+    padding: 6px 8px;
+    vertical-align: bottom;
+}
+
+tbody th {
+    color: var(--text);
+    font-size: 12.5px;
+    letter-spacing: 0.02em;
+    text-transform: none;
+    vertical-align: middle;
+}
+
+.grid td {
+    padding: 0;
+}
+
+.cell {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    align-items: center;
+    gap: 4px 10px;
+    padding: 10px 12px;
+    border-radius: 10px;
+    text-decoration: none;
+    color: var(--text);
+    background: var(--well);
+    border: 1px solid var(--frame);
+}
+
+.cell:hover,
+.cell:focus-visible {
+    border-color: var(--held);
+}
+
+.cell .lamp {
+    width: 11px;
+    height: 11px;
+    border-radius: 50%;
+    grid-row: span 2;
+    background: var(--soft);
+}
+
+.cell b {
+    font: 700 1.25rem/1 var(--mono);
+    font-variant-numeric: tabular-nums;
+}
+
+.cell > span {
+    font-size: 11px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--soft);
+}
+
+.cell.contained .lamp {
+    background: var(--held);
+    box-shadow: 0 0 8px var(--held);
+}
+
+.cell.contained > span {
+    color: var(--held);
+}
+
+.cell.leaking .lamp {
+    background: var(--leak);
+    box-shadow: 0 0 8px var(--leak);
+}
+
+.cell.leaking > span {
+    color: var(--leak);
+}
+
+.cell.breached {
+    border-color: rgb(255 95 210 / 55%);
+    background:
+        repeating-linear-gradient(
+            -45deg,
+            rgb(255 95 210 / 10%) 0 8px,
+            transparent 8px 16px
+        ),
+        #120812;
+}
+
+.cell.breached .lamp {
+    background: var(--breach);
+    box-shadow: 0 0 10px var(--breach);
+}
+
+.cell.breached > span {
+    color: var(--breach);
+}
+
+.legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px 18px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    font: 500 12px var(--mono);
+    color: var(--soft);
+}
+
+.dot {
+    display: inline-block;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    margin-right: 6px;
+}
+
+.dot.contained {
+    background: var(--held);
+}
+
+.dot.leaking {
+    background: var(--leak);
+}
+
+.dot.breached {
+    background: var(--breach);
+}
+
+/* ---------- specimens ---------- */
+.specimens {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 14px;
+}
+
+.spec {
+    display: grid;
+    grid-template-columns: 96px minmax(0, 1fr);
+    gap: 14px;
+    align-items: center;
+    padding: 12px;
+    border-radius: 14px;
+    background: var(--well);
+    border: 1px solid var(--frame);
+}
+
+.spec.breached {
+    border-color: rgb(255 95 210 / 55%);
+}
+
+.spec img {
+    width: 96px;
+    height: 144px;
+    object-fit: contain;
+}
+
+.spec b {
+    font: 700 1rem var(--mono);
+    display: block;
+    color: #fff;
+}
+
+.spec p {
+    margin: 2px 0 6px;
+    color: var(--soft);
+    font-size: 0.92rem;
+}
+
+.status {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    font: 500 11.5px var(--mono);
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--soft);
+}
+
+.status.big {
+    font-size: 13px;
+    letter-spacing: 0.06em;
+    text-transform: none;
+    align-items: baseline;
+}
+
+.status i,
+.chip i {
+    flex: none;
+    width: 9px;
+    height: 9px;
+    border-radius: 50%;
+    background: var(--soft);
+}
+
+.status.contained {
+    color: var(--held);
+}
+
+.status.contained i {
+    background: var(--held);
+}
+
+.status.leaking {
+    color: var(--leak);
+}
+
+.status.leaking i {
+    background: var(--leak);
+}
+
+.status.breached {
+    color: var(--breach);
+}
+
+.status.breached i {
+    background: var(--breach);
+}
+
+/* ---------- cell detail ---------- */
+table.tries {
+    width: 100%;
+    min-width: 560px;
+    border-spacing: 0 6px;
+}
+
+.tries td,
+.tries tbody th {
+    background: var(--well);
+    border-block: 1px solid var(--frame);
+    padding: 8px 10px;
+    font-size: 13px;
+}
+
+.tries tbody th {
+    font-family: var(--body);
+    font-size: 0.95rem;
+    font-weight: 600;
+    border-left: 1px solid var(--frame);
+    border-radius: 10px 0 0 10px;
+}
+
+.tries td:last-child {
+    border-right: 1px solid var(--frame);
+    border-radius: 0 10px 10px 0;
+}
+
+.chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    padding: 4px 9px;
+    border-radius: 8px;
+    border: 1px solid var(--frame);
+    font: 500 12px var(--mono);
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    text-decoration: none;
+    color: var(--soft);
+    white-space: nowrap;
+}
+
+.chip.held {
+    color: var(--held);
+}
+
+.chip.held i {
+    background: var(--held);
+}
+
+.chip.breached {
+    color: var(--breach);
+    border-color: rgb(255 95 210 / 55%);
+    background: repeating-linear-gradient(
+        -45deg,
+        rgb(255 95 210 / 12%) 0 6px,
+        transparent 6px 12px
+    );
+}
+
+.chip.breached i {
+    background: var(--breach);
+}
+
+.chip.error {
+    color: var(--leak);
+    border-style: dashed;
+}
+
+.chip.error i {
+    background: var(--leak);
+    border-radius: 2px;
+}
+
+.chip:hover,
+.chip:focus-visible {
+    border-color: var(--held);
+}
+
+/* ---------- transcript ---------- */
+.twocol {
+    display: grid;
+    grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr);
+    gap: 22px;
+    align-items: start;
+}
+
+.console {
+    font: 400 13.5px/1.65 var(--mono);
+    background: #030604;
+    border: 1px solid var(--frame);
+    border-radius: 12px;
+    padding: 14px 16px;
+    display: grid;
+    gap: 14px;
+    min-width: 0;
+}
+
+.who {
+    font-size: 11px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--soft);
+    margin-bottom: 4px;
+}
+
+.note {
+    font: 400 0.85rem var(--body);
+    color: var(--soft);
+    margin-top: 6px;
+}
+
+mark {
+    background: var(--breach);
+    color: var(--void);
+    padding: 0 4px;
+    border-radius: 3px;
+    font-weight: 700;
+}
+
+mark.poison {
+    display: block;
+    background: none;
+    color: #ffe0a8;
+    font-weight: 400;
+    border-left: 3px solid var(--leak);
+    border-radius: 0;
+    padding: 0 0 0 10px;
+}
+
+.verdict {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 6px 14px;
+    padding: 10px 12px;
+    border-radius: 10px;
+    border: 1px solid var(--frame);
+}
+
+.verdict b {
+    font: 700 13px var(--mono);
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+}
+
+.verdict.held b {
+    color: var(--held);
+}
+
+.verdict.breached {
+    background: rgb(255 95 210 / 8%);
+    border-color: rgb(255 95 210 / 50%);
+}
+
+.verdict.breached b {
+    color: var(--breach);
+}
+
+.verdict.error b {
+    color: var(--leak);
+}
+
+.facts {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    gap: 6px 14px;
+    margin: 0;
+    font-size: 0.95rem;
+}
+
+.facts dt {
+    font: 500 11px/2 var(--mono);
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--soft);
+}
+
+.facts dd {
+    margin: 0;
+    overflow-wrap: anywhere;
+}
+
+.btns {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.tbtn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 9px 14px;
+    border-radius: 10px;
+    font: 700 13px var(--mono);
+    letter-spacing: 0.06em;
+    text-decoration: none;
+    border: 1px solid var(--held);
+    color: var(--held);
+    background: rgb(57 230 107 / 6%);
+}
+
+.tbtn.solid {
+    background: var(--held);
+    color: var(--void);
+}
+
+.tbtn::before {
+    content: '>';
+}
+
+/* ---------- library, defenses, how it works ---------- */
+.cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 340px), 1fr));
+    gap: 22px;
+}
+
+.cards .panel {
+    align-content: start;
+}
+
+.cards h2 {
+    font: 600 1.05rem/1.35 var(--body);
+    letter-spacing: 0;
+}
+
+summary {
+    cursor: pointer;
+    font: 500 13px var(--mono);
+    color: var(--held);
+    padding: 4px 0;
+}
+
+.payload {
+    font-size: 13px;
+    line-height: 1.6;
+    background: #030604;
+    border: 1px solid var(--frame);
+    border-radius: 10px;
+    padding: 12px 14px;
+    margin-top: 8px;
+}
+
+.steps {
+    margin: 0;
+    padding-left: 1.4em;
+    display: grid;
+    gap: 12px;
+}
+
+.steps b {
+    font: 700 0.95rem var(--mono);
+    color: #fff;
+}
+
+.steps p {
+    color: var(--soft);
+}
+
+.foot {
+    color: var(--soft);
+    font-size: 0.9rem;
+    display: grid;
+    gap: 6px;
+    max-width: 70ch;
+}
+
+@media (width <= 900px) {
+    .hero,
+    .twocol {
+        grid-template-columns: 1fr;
+    }
+
+    .specimens {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (width <= 480px) {
+    .wrap {
+        margin-top: -40px;
+    }
+
+    .rain {
+        height: 120px;
+    }
+
+    .spec {
+        grid-template-columns: 72px minmax(0, 1fr);
+    }
+
+    .spec img {
+        width: 72px;
+        height: 108px;
+    }
+
+    .facts {
+        grid-template-columns: 1fr;
+        gap: 0;
+    }
+
+    .facts dd {
+        margin-bottom: 6px;
+    }
+}

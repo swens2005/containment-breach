@@ -68,3 +68,8 @@ jobs:
 
       - name: Tests (Vitest)
         run: npm test
+
+      # Builds the static site from the recorded runs. Fails when the
+      # recordings do not reproduce the latest run file.
+      - name: Build the dashboard
+        run: npm run dashboard:build

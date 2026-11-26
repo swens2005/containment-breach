@@ -4,11 +4,11 @@ import { defineConfig } from 'vite-plus';
 // The dashboard's build is added with its first story.
 export default defineConfig({
     test: {
-        include: ['packages/**/*.test.ts'],
+        include: ['packages/**/*.test.ts', 'apps/**/*.test.ts'],
         environment: 'node',
     },
     lint: {
-        ignorePatterns: ['node_modules/**'],
+        ignorePatterns: ['node_modules/**', 'apps/dashboard/dist/**'],
         options: {
             denyWarnings: true,
             typeAware: true,
@@ -25,6 +25,9 @@ export default defineConfig({
             'runs/**',
             // Recorded model replies, written by the recording client.
             'recordings/**',
+            // Built or generated files of the dashboard.
+            'apps/dashboard/dist/**',
+            'apps/dashboard/public/data.json',
         ],
     },
 });

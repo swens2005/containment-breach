@@ -30,6 +30,15 @@ Ideas that are out of scope for the story at hand.
   no sample app reads one until the scout).
 - One short note per defense in plain words, for the dashboard's
   Defenses page (the plan's learning output for phase 2).
+- Dashboard, phase 4: trends per cell over time, a marker where a
+  model version changed, and the alarm lamp when a defense lost
+  ground. Needs the recordings of more than one run to be kept.
+- Dashboard, phase 6: the autopilot tour through one breach.
+- Dashboard: a social preview picture (`og.webp` exists in the art
+  folder; it needs the site's final address), and a check with a
+  screen reader.
+- Dashboard: show a breach per sample app in the grid (a row per
+  app under each model), if one cell for all three hides too much.
 - A model judge for fuzzy cases: its format and its ADR (phase 3).
 - A monthly schedule for live runs, once the budget allows.
 - Whether a security certificate is worth adding, once the project is

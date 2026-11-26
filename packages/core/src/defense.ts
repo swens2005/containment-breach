@@ -8,6 +8,8 @@ import type { ModelClient } from './model/client.ts';
  */
 export interface Defense {
     id: string;
+    /** Its name on the dashboard. */
+    name: string;
     /** What it does, in one plain sentence. */
     summary: string;
     wrap(client: ModelClient, target: Target): ModelClient;
@@ -16,6 +18,7 @@ export interface Defense {
 /** No defense: the app as it was written. The baseline of every run. */
 export const noDefense: Defense = {
     id: 'none',
+    name: 'No defense',
     summary: 'No defense. The app as it was written.',
     wrap: (client) => client,
 };

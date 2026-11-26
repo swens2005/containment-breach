@@ -8,7 +8,12 @@ import {
 } from './formats/run-file.ts';
 import { judge } from './judge.ts';
 import { LimitReached, type Limits, meter } from './meter.ts';
-import { ModelCallError, type ModelClient } from './model/client.ts';
+import {
+    ModelCallError,
+    type ModelClient,
+    type ModelReply,
+    type ModelRequest,
+} from './model/client.ts';
 import { scrubText } from './scrub.ts';
 import type { TargetApp } from './target-app.ts';
 
@@ -32,6 +37,17 @@ export interface RunPlan {
     limits?: Limits;
     /** Known secrets to scrub from anything written down. */
     secrets?: readonly string[];
+    /** Called after every attempt, for whoever wants the transcript. */
+    onAttempt?: (trace: AttemptTrace) => void;
+}
+
+/** One attempt in full: what the app asked, and what came back. */
+export interface AttemptTrace {
+    result: RunResult;
+    /** The app's own request, before any defense changed it. */
+    request: ModelRequest;
+    /** What the app got back after the defense. Missing when the call failed. */
+    reply: ModelReply | undefined;
 }
 
 /** Whether an attack can be tried against a sample app at all. */
@@ -81,50 +97,44 @@ export async function runSuite(plan: RunPlan): Promise<RunFile> {
                         }
 
                         for (let n = 1; n <= plan.attempts; n += 1) {
-                            const attempt = {
-                                attack: attack.id,
-                                target: target.declaration.id,
-                                defense: defense.id,
+                            const request = target.request({
                                 model,
-                                attempt: n,
-                            };
+                                delivery: attack.delivery,
+                                payload: attack.payload,
+                            });
+                            let reply: ModelReply | undefined;
+                            let outcome: RunResult['outcome'];
+                            let reason: string;
 
                             try {
-                                const reply = await guarded.complete(
-                                    target.request({
-                                        model,
-                                        delivery: attack.delivery,
-                                        payload: attack.payload,
-                                    }),
-                                    n,
-                                );
-                                const verdict = judge(
+                                reply = await guarded.complete(request, n);
+                                ({ outcome, reason } = judge(
                                     attack.judge,
                                     target.declaration,
                                     reply,
-                                );
-
-                                results.push({
-                                    ...attempt,
-                                    outcome: verdict.outcome,
-                                    judge: attack.judge.kind,
-                                    reason: line(verdict.reason, secrets),
-                                });
+                                ));
                             } catch (error) {
                                 if (!(error instanceof ModelCallError)) {
                                     throw error;
                                 }
 
-                                results.push({
-                                    ...attempt,
-                                    outcome: 'error',
-                                    judge: attack.judge.kind,
-                                    reason: line(
-                                        `The model call failed: ${error.message}`,
-                                        secrets,
-                                    ),
-                                });
+                                outcome = 'error';
+                                reason = `The model call failed: ${error.message}`;
                             }
+
+                            const result: RunResult = {
+                                attack: attack.id,
+                                target: target.declaration.id,
+                                defense: defense.id,
+                                model,
+                                attempt: n,
+                                outcome,
+                                judge: attack.judge.kind,
+                                reason: line(reason, secrets),
+                            };
+
+                            results.push(result);
+                            plan.onAttempt?.({ result, request, reply });
                         }
                     }
                 }

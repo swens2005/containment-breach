@@ -30,6 +30,8 @@ npm run types:check    # tsc
 npm test               # Vitest (vp test), *.test.ts next to the code
 npm run cb -- run      # the suite; demo mode unless CB_MODE=live and a key
 npm run cb -- plan     # calls and highest cost of a live run; calls nothing
+npm run dashboard:build   # the static site, from the latest recorded run
+npm run dashboard:sample  # the same with made-up sample data, for local work
 ```
 
 All of these must pass before committing. CI runs the same set, plus a
@@ -50,8 +52,8 @@ scout/              the check proposer
 docs/stories/  docs/decisions/  docs/backlog.md
 ```
 
-One npm package for now (ADR 0001); folders appear with the story that
-needs them.
+One npm package, the dashboard included (ADRs 0001 and 0006); folders
+appear with the story that needs them.
 
 ## Workflow
 
@@ -124,6 +126,15 @@ needs them.
   recordings in `recordings/` stale: demo mode then fails on
   purpose until a new live run (which Meagan starts).
 
+- **Dashboard (ADR 0006):** its data is `public/data.json`, written
+  by `apps/dashboard/scripts/build-data.ts` as a replay of the
+  latest finished live run; never edit numbers by hand. Pages are
+  hash routes in `lib/route.ts`; scores in `lib/score.ts`. No
+  `style` props and no inline styles (the CSP forbids them): use
+  classes in `styles.css`, with the colors of its `:root`. Every
+  status needs its word. To look at it: `npm run dashboard:sample`,
+  then `npx vp preview apps/dashboard --port 8177`.
+
 ## Gotchas (learned in Mission Control)
 
 - **Pinned actions:** CI pins every GitHub Action to a commit. Look the
@@ -138,5 +149,9 @@ needs them.
   with the editor.
 - **CI watching:** after pushing, wait for the _new_ run id before
   `gh run watch`.
+- **Hidden labels in a wide table:** a visually hidden (absolutely
+  placed) label inside a table that scrolls sideways widens the
+  whole page unless the scroll box is `position: relative`
+  (`.grid-wrap`).
 - **CI hangs:** a job stuck on `npm ci` is usually GitHub's network:
   cancel and `gh run rerun <id> --failed`. Jobs have `timeout-minutes`.
