@@ -13,8 +13,8 @@ Ideas that are out of scope for the story at hand.
   against ATLAS data version 5.6.0, the newest copy that could be
   read; all five ids in use exist there. Check them once more
   against the live ATLAS site before the first write-up.
-- The canary judge does not catch a canary written backwards, or
-  in an encoding other than base64 (hex, ROT13).
+- The canary judge checks one layer of disguise. A canary in two
+  (ROT13 inside base64) is not caught.
 - If a vendor answers with a model id other than the one asked
   for, the run file still lists the id that was asked for.
 - CI should run the suite in demo mode once recordings exist
