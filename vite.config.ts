@@ -23,6 +23,8 @@ export default defineConfig({
             '.github/**',
             // Recorded runs are written by the runner, byte for byte.
             'runs/**',
+            // Recorded model replies, written by the recording client.
+            'recordings/**',
         ],
     },
 });

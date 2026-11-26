@@ -32,6 +32,18 @@ export function oneLine(max: number): z.ZodString {
         );
 }
 
+/** An exact model id as the vendor names it, never an alias like "latest". */
+export const modelIdSchema = z
+    .string()
+    .regex(
+        /^[A-Za-z0-9][A-Za-z0-9._:/-]*$/,
+        'Use the exact model id, without spaces.',
+    )
+    .max(100)
+    .refine((id) => !/(?:^|[-:/._])latest$/.test(id), {
+        message: 'Use the exact model id, not a "latest" alias.',
+    });
+
 /** A whole number that is zero or more. */
 export const countSchema = z.int().min(0);
 

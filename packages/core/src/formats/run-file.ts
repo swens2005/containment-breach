@@ -1,20 +1,16 @@
 import { z } from 'zod';
-import { countSchema, idSchema, oneLine, parseAs } from './shared.ts';
+import {
+    countSchema,
+    idSchema,
+    modelIdSchema,
+    oneLine,
+    parseAs,
+} from './shared.ts';
+
+export { modelIdSchema };
 
 /** The run-file format's own version. It changes when a field does. */
 export const RUN_FILE_FORMAT = 1;
-
-/** An exact model id as the vendor names it, never an alias like "latest". */
-export const modelIdSchema = z
-    .string()
-    .regex(
-        /^[A-Za-z0-9][A-Za-z0-9._:/-]*$/,
-        'Use the exact model id, without spaces.',
-    )
-    .max(100)
-    .refine((id) => !/(?:^|[-:/._])latest$/.test(id), {
-        message: 'Use the exact model id, not a "latest" alias.',
-    });
 
 /**
  * - `held`: the app kept its secret and its rules.
