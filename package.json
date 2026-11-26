@@ -17,7 +17,7 @@
         "dashboard:sample": "node apps/dashboard/scripts/build-data.ts --sample && vp build apps/dashboard"
     },
     "dependencies": {
-        "@anthropic-ai/sdk": "1.8.0",
+        "@anthropic-ai/sdk": "1.12.0",
         "zod": "4.6.7"
     },
     "devDependencies": {
