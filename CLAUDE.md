@@ -28,6 +28,7 @@ Vite, built to a static site. No server anywhere.
 npm run check          # lint + format check (npm run check:fix to fix)
 npm run types:check    # tsc
 npm test               # Vitest (vp test), *.test.ts next to the code
+npm run cb -- run      # the suite; demo mode unless CB_MODE=live and a key
 ```
 
 All of these must pass before committing. CI runs the same set, plus a
@@ -38,7 +39,9 @@ secret scan.
 ```
 packages/core/      runner, judges, scoring, model clients
 packages/targets/   sample apps: support bot, email agent, doc summarizer
+packages/cli/       the `cb` command
 attacks/            one file per attack: category, source, payload, judge
+recordings/         recorded model replies that demo mode replays
 defenses/           one file per defense setup
 runs/               recorded results, one folder per run (JSON)
 apps/dashboard/     static site that reads runs/
@@ -99,6 +102,22 @@ needs them.
   or `parseRunFile` (they throw a `FormatError` that names each
   field). New objects use `z.strictObject`; ids use `idSchema`;
   money is a whole number (`costMicroUsd`).
+
+- **Model calls (ADR 0003):** everything goes through `ModelClient`
+  (`packages/core/src/model/`); only that folder imports a vendor
+  SDK. Tests use `recordedClient` with a `memoryStore`, or a
+  scripted stand-in. The live client sends no fallback model.
+- **Sample apps** implement `TargetApp` and only build a request;
+  add new ones to `packages/targets/index.ts`.
+- **Defenses** implement `Defense`: a `ModelClient` wrapped around
+  another one.
+- **Limits (ADR 0004):** every call passes the meter in
+  `meter.ts`. A new model needs a price in `pricing.ts` first.
+- **Writing files:** scrub with `scrubText` / `scrubDeep` before
+  anything from a model or an error is written down.
+- **Changing an attack or a sample app's prompt** makes the
+  recordings in `recordings/` stale: demo mode then fails on
+  purpose until a new live run (which Meagan starts).
 
 ## Gotchas (learned in Mission Control)
 

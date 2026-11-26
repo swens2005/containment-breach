@@ -1,5 +1,7 @@
 /node_modules
 /dist
+# Demo runs replay recordings; their output is not a result to keep
+/.cb
 .DS_Store
 npm-debug.log
 # Every env file is secret

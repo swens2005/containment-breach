@@ -10,7 +10,8 @@
         "check": "vp check",
         "check:fix": "vp check --fix",
         "types:check": "tsc --noEmit",
-        "test": "vp test run"
+        "test": "vp test run",
+        "cb": "node packages/cli/bin.ts"
     },
     "dependencies": {
         "@anthropic-ai/sdk": "1.8.0",
