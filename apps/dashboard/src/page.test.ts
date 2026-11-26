@@ -36,13 +36,13 @@ describe('the dashboard page', () => {
     });
 
     it('offers a preview picture that is one of its own files', () => {
-        const picture = content(/property="og:image" content="([^"]+)"/);
+        const picture = content(/property="og:image"\s+content="([^"]+)"/);
 
         expect(picture.startsWith(site)).toBe(true);
         expect(
             existsSync(join(dashboard, 'public', picture.slice(site.length))),
         ).toBe(true);
-        expect(content(/rel="canonical" href="([^"]+)"/)).toBe(site);
-        expect(content(/property="og:url" content="([^"]+)"/)).toBe(site);
+        expect(content(/rel="canonical"\s+href="([^"]+)"/)).toBe(site);
+        expect(content(/property="og:url"\s+content="([^"]+)"/)).toBe(site);
     });
 });
