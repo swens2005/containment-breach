@@ -55,6 +55,13 @@ export const runFileSchema = z
          * dollar, because one model call costs far less than a cent.
          */
         costMicroUsd: countSchema,
+        /** Present only when the run stopped early at one of its limits. */
+        stopped: z
+            .strictObject({
+                reason: z.enum(['token-limit', 'run-cap', 'month-cap']),
+                detail: oneLine(300),
+            })
+            .optional(),
         results: z.array(resultSchema).max(100_000),
     })
     .superRefine((run, context) => {

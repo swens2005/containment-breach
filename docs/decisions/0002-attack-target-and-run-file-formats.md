@@ -48,7 +48,9 @@ has to say which one it is.
   suite version, the mode (`demo` or `live`), the exact model ids,
   token counts, the cost, and one result per attempt. A result's
   outcome is `held`, `breached` or `error`: a failed model call is
-  never counted as held.
+  never counted as held. A run that stopped early at a limit also
+  stores `stopped`, with the reason (added with story 05; nothing
+  was published yet, so the format number stays 1).
 - **Exact model ids only.** An alias ending in `latest` is refused,
   because the dashboard's point is to show what changed between model
   versions.
@@ -72,4 +74,5 @@ has to say which one it is.
   loudly.
 - The formats check shape, not truth: that an ATLAS id exists, or that
   an attack's forbidden tool belongs to its target, is checked when
-  the runner pairs them (story 04).
+  the runner pairs them (story 04). The loader checks that a file is
+  named after its attack's id.
