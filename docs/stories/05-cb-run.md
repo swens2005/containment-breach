@@ -33,8 +33,9 @@ and can never surprise me with a bill, so trying it is safe.
 
 ## Notes
 
-- Defaults: Claude Opus 5.5, 3 tries per attack, 200,000 tokens and
-  $1.00 per run, $10.00 per month. All can be set with environment
+- Defaults when built: Claude Opus 5.5, 3 tries per attack, 200,000
+  tokens and $1.00 per run, $10.00 per month. Story 12 changed the
+  model to Claude Haiku 5.5 and the month to $5.00. All can be set with environment
   variables; `npm run cb -- help` lists them.
 - The estimate before a call is on the high side on purpose (one token
   per two characters sent, and the full answer length back), so a run

@@ -48,11 +48,11 @@ plan  Shows how many calls a live run would make and the most it could
 Settings (environment variables):
   CB_MODE           demo (default) or live. Without ANTHROPIC_API_KEY
                     the mode is always demo.
-  CB_MODELS         exact model ids, comma-separated (default claude-opus-5-5)
+  CB_MODELS         exact model ids, comma-separated (default claude-haiku-5-5)
   CB_ATTEMPTS       tries per attack, 1 to 10 (default 3)
   CB_TOKEN_LIMIT    most tokens for one live run (default 200000)
   CB_RUN_CAP_USD    most one live run may cost (default 1.00)
-  CB_MONTH_CAP_USD  most all live runs of a month may cost (default 10.00)
+  CB_MONTH_CAP_USD  most all live runs of a month may cost (default 5.00)
 
 Exit codes: 0 done, 1 error, 2 wrong usage, 3 stopped at a cap.`;
 
@@ -113,7 +113,7 @@ function dollars(env: Io['env'], name: string, fallback: string): number {
 
 function modelsFrom(env: Io['env']): string[] {
     const text = env['CB_MODELS'];
-    const ids = (text === undefined || text === '' ? 'claude-opus-5-5' : text)
+    const ids = (text === undefined || text === '' ? 'claude-haiku-5-5' : text)
         .split(',')
         .map((id) => id.trim())
         .filter((id) => id !== '');
@@ -187,7 +187,7 @@ function limitsFrom(io: Io, now: Date): Limits {
             100_000_000,
         ),
         runCapMicroUsd: dollars(io.env, 'CB_RUN_CAP_USD', '1.00'),
-        monthCapMicroUsd: dollars(io.env, 'CB_MONTH_CAP_USD', '10.00'),
+        monthCapMicroUsd: dollars(io.env, 'CB_MONTH_CAP_USD', '5.00'),
         monthSpentMicroUsd: monthSpent(join(io.root, 'runs'), now),
     };
 }

@@ -185,11 +185,12 @@ describe('cb run', () => {
         expect(live.mode).toBe('live');
         expect(live.results).toHaveLength(attempts);
         expect(live.tokens).toEqual({ input: 300 * calls, output: 40 * calls });
-        expect(live.costMicroUsd).toBe((300 * 4 + 40 * 20) * calls);
+        // Claude Haiku 5.5: $0.10 and $0.50 per million tokens.
+        expect(live.costMicroUsd).toBe((300 * 0.1 + 40 * 0.5) * calls);
         expect(readdirSync(join(root, 'recordings'))).toHaveLength(calls);
         expect(printed.join('\n')).toContain('Mode: live.');
         expect(printed.join('\n')).toContain(
-            'support-bot / none / claude-opus-5-5: 0 of 21 attempts breached (0%)',
+            'support-bot / none / claude-haiku-5-5: 0 of 21 attempts breached (0%)',
         );
         expect(printed.at(-1)).toBe(`Run file: ${liveFile}`);
 
@@ -222,11 +223,15 @@ describe('cb run', () => {
     });
 
     it('stops halfway at the spending cap, and marks the run file as stopped', async () => {
-        // One call costs 2,000 and is estimated at about 41,000 before
+        // On Claude Opus 5.5 one call costs 2,000 and is estimated at about 41,000 before
         // it is made, so a cap of 0.05 dollars allows a few calls only.
         const code = await main(
             ['run'],
-            io({ ...liveEnv, CB_RUN_CAP_USD: '0.05' }),
+            io({
+                ...liveEnv,
+                CB_MODELS: 'claude-opus-5-5',
+                CB_RUN_CAP_USD: '0.05',
+            }),
         );
         const run = readRun(
             join(root, 'runs', '2026-11-26T100000Z', 'run.json'),
@@ -271,12 +276,22 @@ describe('cb run', () => {
 
         const code = await main(
             ['run'],
-            io({ ...liveEnv, CB_MONTH_CAP_USD: '8.01' }),
+            io({
+                ...liveEnv,
+                CB_MODELS: 'claude-opus-5-5',
+                CB_MONTH_CAP_USD: '8.01',
+            }),
         );
 
         expect(code).toBe(EXIT.stoppedAtCap);
         expect(liveCalls).toBe(0);
         expect(printed.join('\n')).toContain("this month's spending cap");
+
+        // Without a cap of its own, a month stops at $5.00.
+        expect(await main(['run'], io(liveEnv))).toBe(EXIT.stoppedAtCap);
+        expect(
+            await main(['run'], io({ ...liveEnv, CB_MONTH_CAP_USD: '10' })),
+        ).toBe(EXIT.done);
     });
 
     it('refuses to run when an earlier run file cannot be trusted', async () => {
@@ -312,7 +327,7 @@ describe('cb plan', () => {
         // 14 attacks, each fitting one sample app; 5 defenses; 3 tries.
         expect(attackCount).toBe(14);
         expect(text).toContain(
-            'Plan for claude-opus-5-5: 210 attempts, at most ',
+            'Plan for claude-haiku-5-5: 210 attempts, at most ',
         );
         expect(text).toContain('This is a high estimate');
         expect(text).toContain('These caps could stop the run early.');

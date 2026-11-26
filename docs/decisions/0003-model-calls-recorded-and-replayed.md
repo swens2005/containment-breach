@@ -1,6 +1,6 @@
 # 0003. Model calls: one interface, recorded and replayed
 
-- Status: proposed
+- Status: accepted
 - Date: 2026-11-26
 - Stories 02, 03 and 04.
 

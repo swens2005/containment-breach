@@ -16,6 +16,13 @@ updates:
       interval: "weekly"
     cooldown:
       default-days: 5
+    # Major versions of the language and of Node's types are moved by
+    # hand, in a story of their own (the types follow the Node version).
+    ignore:
+      - dependency-name: "typescript"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "@types/node"
+        update-types: ["version-update:semver-major"]
     groups:
       npm:
         patterns:

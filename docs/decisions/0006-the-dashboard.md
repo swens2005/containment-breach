@@ -1,6 +1,6 @@
 # 0006. The dashboard: a static site built by replaying a run
 
-- Status: proposed
+- Status: accepted
 - Date: 2026-11-26
 - Story 11.
 

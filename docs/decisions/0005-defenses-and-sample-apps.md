@@ -1,6 +1,6 @@
 # 0005. Five defense setups and three sample apps
 
-- Status: proposed
+- Status: accepted
 - Date: 2026-11-26
 - Stories 06 to 10.
 

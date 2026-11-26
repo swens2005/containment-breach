@@ -1,6 +1,6 @@
 # 0002. Attack, target and run-file formats
 
-- Status: proposed
+- Status: accepted
 - Date: 2026-11-25
 - Story 01.
 

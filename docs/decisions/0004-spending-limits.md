@@ -1,6 +1,6 @@
 # 0004. Spending limits for live runs
 
-- Status: proposed
+- Status: accepted
 - Date: 2026-11-26
 - Story 05.
 
@@ -18,7 +18,8 @@ not enough.
   so.
 - **Three limits on every live run:** tokens per run (default
   200,000), dollars per run (default $1.00) and dollars per month
-  (default $10.00).
+  (default $5.00). The default model is the cheapest one with a
+  known price, Claude Haiku 5.5 (story 12).
 - **Checked before each call, not after.** Every call goes through one
   meter. It estimates the call on the high side (one token per two
   characters sent, and the full allowed answer back) and refuses the
