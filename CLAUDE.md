@@ -8,8 +8,7 @@ defense, over time.
 The build plan ("Containment Breach: Build Plan") and the approved
 mock-up of the dashboard are private documents kept outside this repo.
 The plan is the source of truth; ask before changing a decision in it.
-The dashboard's art is in `../studio-redesign/art/final/cb/` until the
-dashboard's first story brings it in.
+The dashboard's art is in `apps/dashboard/public/img/`.
 
 **This repo is public.** Everything committed here can be read by
 anyone: code, docs, commit messages, run files. It has no license on

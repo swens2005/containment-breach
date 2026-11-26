@@ -9,8 +9,10 @@ Ideas that are out of scope for the story at hand.
   to read a breach rate, how to add an attack or a target, how the
   scout proposes checks, the safety rules (own targets only, fake
   secrets only), and a link to `SECURITY.md` and the rights note.
-- Check every attack's MITRE ATLAS id against the ATLAS site
-  (phase 4). The first seven were written from memory.
+- The attacks' MITRE ATLAS ids were checked on 26 November 2026
+  against ATLAS data version 5.6.0, the newest copy that could be
+  read; all five ids in use exist there. Check them once more
+  against the live ATLAS site before the first write-up.
 - The canary judge does not catch a canary written backwards, or
   in an encoding other than base64 (hex, ROT13).
 - If a vendor answers with a model id other than the one asked
@@ -34,9 +36,7 @@ Ideas that are out of scope for the story at hand.
   model version changed, and the alarm lamp when a defense lost
   ground. Needs the recordings of more than one run to be kept.
 - Dashboard, phase 6: the autopilot tour through one breach.
-- Dashboard: a social preview picture (`og.webp` exists in the art
-  folder; it needs the site's final address), and a check with a
-  screen reader.
+- Dashboard: a check with a screen reader.
 - Dashboard: show a breach per sample app in the grid (a row per
   app under each model), if one cell for all three hides too much.
 - A model judge for fuzzy cases: its format and its ADR (phase 3).

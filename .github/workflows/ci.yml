@@ -1,5 +1,6 @@
 # Every push and pull request: secret scan, lint and format, types, tests.
 # Nothing here calls a model: tests replay recorded replies.
+# A push to main that passes is then published as a static site.
 name: CI
 
 on:
@@ -73,3 +74,72 @@ jobs:
       # recordings do not reproduce the latest run file.
       - name: Build the dashboard
         run: npm run dashboard:build
+
+  deploy:
+    name: Publish the dashboard
+    needs: [secrets-scan, checks]
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    concurrency:
+      group: publish
+      cancel-in-progress: false
+    env:
+      # One fixed folder, relative to the folder the FTP account logs in
+      # to. Never a secret or an input: a wrong folder could overwrite
+      # another site. Must end with a slash.
+      SITE_DIR: public_html/containment-breach/
+      SITE_URL: https://codelaunch.nl/containment-breach/
+    steps:
+      # Skip cleanly (instead of failing) until the FTP secrets are set.
+      - name: Check deployment secrets
+        id: secrets
+        env:
+          FTP_SERVER: ${{ secrets.FTP_SERVER }}
+          FTP_USERNAME: ${{ secrets.FTP_USERNAME }}
+          FTP_PASSWORD: ${{ secrets.FTP_PASSWORD }}
+        run: |
+          if [ -z "$FTP_SERVER" ] || [ -z "$FTP_USERNAME" ] || [ -z "$FTP_PASSWORD" ]; then
+            echo "::warning::FTP_SERVER, FTP_USERNAME and FTP_PASSWORD are not all set, so nothing was published."
+            echo "ready=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "ready=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        if: steps.secrets.outputs.ready == 'true'
+        with:
+          persist-credentials: false
+
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        if: steps.secrets.outputs.ready == 'true'
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+
+      - name: Install dependencies
+        if: steps.secrets.outputs.ready == 'true'
+        run: npm ci
+
+      - name: Build the dashboard
+        if: steps.secrets.outputs.ready == 'true'
+        run: npm run dashboard:build
+
+      # Uploads only the built site, and only files that changed since
+      # the last upload (tracked in a state file inside SITE_DIR).
+      - name: Upload over FTPS
+        if: steps.secrets.outputs.ready == 'true'
+        uses: SamKirkland/FTP-Deploy-Action@110f9186c050f71550953127052e77650219c287 # v4.4.0
+        with:
+          server: ${{ secrets.FTP_SERVER }}
+          username: ${{ secrets.FTP_USERNAME }}
+          password: ${{ secrets.FTP_PASSWORD }}
+          protocol: ftps
+          local-dir: apps/dashboard/dist/
+          server-dir: ${{ env.SITE_DIR }}
+
+      - name: Check the published page
+        if: steps.secrets.outputs.ready == 'true'
+        run: |
+          curl --fail --silent --show-error --location --retry 3 --retry-delay 5 "$SITE_URL" \
+            | grep --quiet '<title>Containment Breach</title>'
